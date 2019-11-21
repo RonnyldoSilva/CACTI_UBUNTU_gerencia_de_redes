@@ -265,3 +265,213 @@ MariaDB [(none)]> SELECT VERSION();
   1 row in set (0.000 sec)
 ```
 
+Tune MariaDB database for Cacti
+
+Add the following settings under `[mysqld]` on the file `/etc/mysql/mariadb.cnf`:
+
+```
+max_heap_table_size=128M
+tmp_table_size=128M
+join_buffer_size=64M
+innodb_buffer_pool_size=512M
+innodb_doublewrite=OFF
+innodb_flush_log_at_timeout=3
+innodb_read_io_threads=32
+innodb_write_io_threads=16
+```
+
+Restart mariadb service
+
+```
+MariaDB [(none)]> select @@tmp_table_size;
++------------------+
+| @@tmp_table_size |
++------------------+
+| 134217728 |
++------------------+
+1 row in set (0.00 sec)
+```
+
+Once Database server installation is done, you need to create a database for Cacti:
+
+```
+mysql -u root -p
+  
+  Welcome to the MariaDB monitor. Commands end with ; or \g.
+  Your MariaDB connection id is 56
+  Server version: 10.3.7-MariaDB-1:10.3.7+maria~bionic-log mariadb.org binary distribution
+  Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+  Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+  MariaDB [(none)]> create database cacti;
+  Query OK, 1 row affected (0.000 sec)
+  MariaDB [(none)]> grant all privileges on cacti.* to cacti_user@'localhost' identified by 'strongpassword';
+  Query OK, 0 rows affected (0.001 sec)
+  MariaDB [(none)]> flush privileges; 
+  Query OK, 0 rows affected (0.001 sec)
+  MariaDB [(none)]> exit 
+  Bye
+```
+
+Test database connection:
+
+```
+mysql -u cacti_user -p
+
+  Enter password: 
+  Welcome to the MariaDB monitor. Commands end with ; or \g.
+  Your MariaDB connection id is 178
+  Server version: 10.1.29-MariaDB-6 Ubuntu 18.04
+
+  Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.
+
+  Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+  MariaDB [(none)]> show databases;
+  +--------------------+
+  | Database |
+  +--------------------+
+  | cacti |
+  | information_schema |
+  +--------------------+
+  2 rows in set (0.00 sec)
+
+  MariaDB [(none)]>
+```
+
+### Step 4: Install SNMP and Cacti
+
+The last package installation step is for Cacti and snmp packages. Cacti depend on Snmp and rrdtool tool for its functions. Install these packages using the command:
+
+```
+sudo apt-get install snmp snmpd snmp-mibs-downloader rrdtool cacti cacti-spine
+```
+
+When asked to select the web server, choose `Apache`.
+
+```
++-------------------------+ Configuring cacti +--------------------------+
+| Please select the web server for which Cacti should be automatically   |
+| configured.                                                            |
+|                                                                        |
+| Select "None" if you would like to configure the web server manually.  |
+|                                                                        |
+| Web server:                                                            |
+|                                                                        |
+|                                apache2                                 |
+|                                lighttpd                                |
+|                                None                                    |
+|                                                                        |
+|                                                                        |
+|                                 <Ok>                                   |
+|                                                                        |
++------------------------------------------------------------------------+
+```
+
+For Database configuration, select `no` for manual configuration since we have created a database for cacti on.
+
+```
++---------------------------+ Configuring cacti +---------------------------+
+|                                                                           |
+| The cacti package must have a database installed and configured before    |
+| it can be used.  This can be optionally handled with dbconfig-common.     |
+|                                                                           |
+| If you are an advanced database administrator and know that you want to   |
+| perform this configuration manually, or if your database has already      |
+| been installed and configured, you should refuse this option.  Details    |
+| on what needs to be done should most likely be provided in                |
+| /usr/share/doc/cacti.                                                     |
+|                                                                           |
+| Otherwise, you should probably choose this option.                        |
+|                                                                           |
+| Configure database for cacti with dbconfig-common?                        |
+|                                                                           |
+|                    <Yes>                       <No>                       |
+|                                                                           |
++---------------------------------------------------------------------------+
+```
+
+Wait for the installation to finish then proceed to configure SNMP.
+
+### Step 5: Configure SNMP
+
+Start by enabling the loading of MIBs by commenting out the following line on `/etc/snmp/snmp.conf`.
+
+Change `mibs :` to `# mibs :`
+
+Configure SNMP community name by editing `/etc/snmp/snmpd.conf`
+
+On line 49 -  Uncomment and change to the name of community string to any name you like.
+
+This enable full access from localhost
+
+`rocommunity Computingforgeeks localhost`
+
+Diable public access by commenting below lines:
+
+```
+rocommunity public default -V systemonly
+rocommunity6 public default -V systemonly
+```
+
+To
+
+```
+# rocommunity public default -V systemonly
+# rocommunity6 public default -V systemonly
+```
+
+Restart snmpd service
+
+```
+sudo systemctl restart snmpd
+```
+
+Validate snmp configurations using snmpwalk command line tool:
+
+```
+sudo snmpwalk -v 2c -c Computingforgeeks localhost system
+SNMPv2-MIB::sysDescr.0 = STRING: Linux cacti 4.15.0-22-generic #24-Ubuntu SMP Wed May 16 12:15:17 UTC 2018 x86_64
+SNMPv2-MIB::sysObjectID.0 = OID: NET-SNMP-MIB::netSnmpAgentOIDs.10
+DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (11034) 0:01:50.34
+SNMPv2-MIB::sysContact.0 = STRING: Me <me@example.org>
+SNMPv2-MIB::sysName.0 = STRING: cacti
+SNMPv2-MIB::sysLocation.0 = STRING: Sitting on the Dock of the Bay
+SNMPv2-MIB::sysServices.0 = INTEGER: 72
+SNMPv2-MIB::sysORLastChange.0 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORID.1 = OID: SNMP-MPD-MIB::snmpMPDCompliance
+SNMPv2-MIB::sysORID.2 = OID: SNMP-USER-BASED-SM-MIB::usmMIBCompliance
+SNMPv2-MIB::sysORID.3 = OID: SNMP-FRAMEWORK-MIB::snmpFrameworkMIBCompliance
+SNMPv2-MIB::sysORID.4 = OID: SNMPv2-MIB::snmpMIB
+SNMPv2-MIB::sysORID.5 = OID: SNMP-VIEW-BASED-ACM-MIB::vacmBasicGroup
+SNMPv2-MIB::sysORID.6 = OID: TCP-MIB::tcpMIB
+SNMPv2-MIB::sysORID.7 = OID: IP-MIB::ip
+SNMPv2-MIB::sysORID.8 = OID: UDP-MIB::udpMIB
+SNMPv2-MIB::sysORID.9 = OID: SNMP-NOTIFICATION-MIB::snmpNotifyFullCompliance
+SNMPv2-MIB::sysORID.10 = OID: NOTIFICATION-LOG-MIB::notificationLogMIB
+SNMPv2-MIB::sysORDescr.1 = STRING: The MIB for Message Processing and Dispatching.
+SNMPv2-MIB::sysORDescr.2 = STRING: The management information definitions for the SNMP User-based Security Model.
+SNMPv2-MIB::sysORDescr.3 = STRING: The SNMP Management Architecture MIB.
+SNMPv2-MIB::sysORDescr.4 = STRING: The MIB module for SNMPv2 entities
+SNMPv2-MIB::sysORDescr.5 = STRING: View-based Access Control Model for SNMP.
+SNMPv2-MIB::sysORDescr.6 = STRING: The MIB module for managing TCP implementations
+SNMPv2-MIB::sysORDescr.7 = STRING: The MIB module for managing IP and ICMP implementations
+SNMPv2-MIB::sysORDescr.8 = STRING: The MIB module for managing UDP implementations
+SNMPv2-MIB::sysORDescr.9 = STRING: The MIB modules for managing SNMP Notification, plus filtering.
+SNMPv2-MIB::sysORDescr.10 = STRING: The MIB module for logging SNMP Notifications.
+SNMPv2-MIB::sysORUpTime.1 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.2 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.3 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.4 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.5 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.6 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.7 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.8 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.9 = Timeticks: (1) 0:00:00.01
+SNMPv2-MIB::sysORUpTime.10 = Timeticks: (1) 0:00:00.01
+```
+
+Remember to replace `Computingforgeeks` with the name of your community string.
+
+### Step 6: Configure Cacti Server
+
