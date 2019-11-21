@@ -475,3 +475,16 @@ Remember to replace `Computingforgeeks` with the name of your community string.
 
 ### Step 6: Configure Cacti Server
 
+From here, we have to configure database settings for Cacti and initiate setup on the web interface. Change db settings on the file `/usr/share/cacti/site/include/config.php`.
+
+```
+# On line 49 - Change cacti database connection info
+
+$database_type = "mysqli";
+$database_default = "cacti";
+$database_hostname = "localhost";
+$database_username = "cacti_user";
+$database_password = "strongpassword";
+$database_port = "3306";
+$database_ssl = false;
+```
