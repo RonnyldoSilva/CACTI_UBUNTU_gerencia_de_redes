@@ -488,3 +488,51 @@ $database_password = "strongpassword";
 $database_port = "3306";
 $database_ssl = false;
 ```
+
+Replace cacti_user with database user you created on Step 3 and strongpassword with cacti database user password.
+
+Import cacti Mysql database schema:
+
+```
+mysql -u cacti_user -p cacti < /usr/share/doc/cacti/cacti.sql 
+
+Enter password:
+```
+
+Replace cacti_user with database user and cacti with the database name.
+
+Setup mysql timezone for cacti database user. Wait to finish it.
+
+```
+mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
+
+Enter password: 
+Warning: Unable to load '/usr/share/zoneinfo/leap-seconds.list' as time zone. Skipping it.
+```
+
+Grant cacti MySQL database user access to TimeZone database:
+
+```
+mysql -u root -p
+
+Enter password: 
+
+Welcome to the MariaDB monitor. Commands end with ; or \g.
+Your MariaDB connection id is 202
+Server version: 10.1.29-MariaDB-6 Ubuntu 18.04
+
+Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> 
+MariaDB [(none)]> GRANT SELECT ON mysql.time_zone_name TO cacti_user@localhost;
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [(none)]> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [(none)]> exit
+Bye
+```
+
