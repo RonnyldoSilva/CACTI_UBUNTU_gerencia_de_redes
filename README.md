@@ -536,3 +536,46 @@ MariaDB [(none)]> exit
 Bye
 ```
 
+Configure Cacti apache site Access control:
+
+If you would like to restrict access to Cacti Web interface, edit the file `/etc/apache2/conf-available/cacti.conf` and comment out the line:
+
+```
+Require all granted
+```
+
+Then configure as below:
+
+```
+# Change line 7
+#Require all granted
+Require host localhost
+Require ip 192.168.1.0/24
+```
+
+Replace 192.168.1.0/24 with your trusted subnet. You can also add a single IP like below:
+
+```
+Require ip 192.168.1.20
+Require ip 172.16.20.30
+```
+
+You need to restart apache service after making above modifications,
+
+```
+sudo systemctl restart apache2
+```
+
+Create the follow folder:
+
+```
+sudo mkdir /opt/cacti/
+```
+
+Set directory permissions
+
+```
+sudo chown -R www-data:www-data  /opt/cacti/
+```
+
+### Step 7: Start Initial Cacti Setup
