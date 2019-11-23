@@ -74,7 +74,7 @@ sudo apt-get -y install apache2
 After installing Apache, configure basic security by allowing Prod ServerTokens only.
 
 ```
-sudo vim /etc/apache2/conf-enabled/security.conf
+sudo gedit /etc/apache2/conf-enabled/security.conf
 ```
 
 Change line 25 to `ServerTokens Prod`
