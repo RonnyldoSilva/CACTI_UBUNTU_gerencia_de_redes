@@ -305,7 +305,7 @@ mysql -u root -p
 
   MariaDB [(none)]> create database cacti;
   Query OK, 1 row affected (0.000 sec)
-  MariaDB [(none)]> grant all privileges on cacti.* to cacti_user@'localhost' identified by 'strongpassword';
+  MariaDB [(none)]> grant all privileges on cacti.* to cacti_user@'localhost' identified by 'root';
   Query OK, 0 rows affected (0.001 sec)
   MariaDB [(none)]> flush privileges; 
   Query OK, 0 rows affected (0.001 sec)
@@ -484,7 +484,7 @@ $database_type = "mysqli";
 $database_default = "cacti";
 $database_hostname = "localhost";
 $database_username = "cacti_user";
-$database_password = "strongpassword";
+$database_password = "root";
 $database_port = "3306";
 $database_ssl = false;
 ```
