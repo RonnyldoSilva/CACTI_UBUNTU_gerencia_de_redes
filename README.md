@@ -102,14 +102,14 @@ grep ServerAdmin /etc/apache2/apache2.conf
 Check if you have ufw enabled, open http and https ports on the firewall.
 
 ```
-ufw allow http
+sudo ufw allow http
   
   Output:
   Rule added
   Rule added (v6
 ```
 ```
-ufw allow https
+sudo ufw allow https
 
   Output:
   Rule added
