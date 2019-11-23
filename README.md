@@ -480,7 +480,7 @@ From here, we have to configure database settings for Cacti and initiate setup o
 ```
 # On line 49 - Change cacti database connection info
 
-$database_type = "mysqli";
+$database_type = "mysql";
 $database_default = "cacti";
 $database_hostname = "localhost";
 $database_username = "cacti_user";
