@@ -1,6 +1,6 @@
 # How to Install and Configure Cacti on Ubuntu 18.04
 
-## What is CACTI?
+## What is CACTI? 
 
 Cacti is a completely open-source network monitoring and graphing tool that was designed as a front-end application for the industry-standard data logging tool RRDtool. Cacti harness the power of RRDTool’s data storage and graphing functionality. Some good features of Cacti include:
 
