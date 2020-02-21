@@ -1,4 +1,4 @@
-# How to Install and Configure Cacti on Ubuntu 18.04 
+# How to Install and Configure Cacti on Ubuntu 18.04  
 
 ![](https://github.com/RonnyldoSilva/CACTI_UBUNTU_gerencia_de_redes/blob/master/Screenshot%20from%202019-11-26%2021-46-59.png)
 
